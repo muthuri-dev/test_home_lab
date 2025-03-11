@@ -52,7 +52,7 @@ jobs:
       - name: Test API connectivity
         run: |
           export KUBECONFIG=$(pwd)/kubeconfig.yaml
-          curl -k https://4.tcp.ngrok.io:18517/version
+          curl -k https://2.tcp.ngrok.io:17176/version
 
       # Update the Kubernetes deployment with the newly built image
       - name: Update Kubernetes deployment with new image
