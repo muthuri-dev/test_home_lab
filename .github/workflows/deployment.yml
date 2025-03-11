@@ -10,12 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Check out the repository code
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Set up Docker Buildx for building multi-platform images
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      # Log in to GitHub Container Registry using a Personal Access Token (PAT)
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -23,28 +26,28 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
 
+      # Build and push the Docker image with a unique version tag (e.g., version-1, version-2, etc.)
       - name: Build and push Docker image with version tag
         id: build_image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          # Tag image with a version like version-1, etc.
+          # Tag image using the repository name and the current run number
           tags: ghcr.io/${{ github.repository }}:version-${{ github.run_number }}
 
+      # Set up kubectl by writing the production kubeconfig from the secret to a file.
+      # Using printf preserves the formatting/newlines.
       - name: Set up kubectl with prod kubeconfig
         run: |
-          echo "${{ secrets.KUBECONFIG_PROD }}" > kubeconfig.yaml
+          # Write the kubeconfig file using printf to preserve newlines
+          printf "%s" "${{ secrets.KUBECONFIG_PROD }}" > kubeconfig.yaml
+          # Set the KUBECONFIG environment variable so kubectl can find the file
           export KUBECONFIG=$(pwd)/kubeconfig.yaml
+          # Debug: List the contexts from the kubeconfig to verify it's loaded correctly
           kubectl config get-contexts
 
-      - name: Show kubeconfig
-        run: |
-          cat kubeconfig.yaml
-          kubectl config view
-          kubectl cluster-info
-
+      # Update the Kubernetes deployment with the newly built image using the same version tag
       - name: Update Kubernetes deployment with new image
         run: |
-          # Use the same version tag in the update command
           kubectl set image deployment/test-home-lab test_home_lab=ghcr.io/${{ github.repository }}:version-${{ github.run_number }} -n default
