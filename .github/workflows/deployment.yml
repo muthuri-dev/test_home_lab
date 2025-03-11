@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Set up Docker Buildx for building multi-platform images
+      # Set up Docker Buildx for building images
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -26,28 +26,36 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
 
-      # Build and push the Docker image with a unique version tag (e.g., version-1, version-2, etc.)
+      # Build and push the Docker image with a unique version tag
       - name: Build and push Docker image with version tag
         id: build_image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          # Tag image using the repository name and the current run number
           tags: ghcr.io/${{ github.repository }}:version-${{ github.run_number }}
 
-      # Set up kubectl by writing the production kubeconfig from the secret to a file.
-      # Using printf preserves the formatting/newlines.
+      # Write the production kubeconfig file from the secret using printf
       - name: Set up kubectl with prod kubeconfig
         run: |
-          # Write the kubeconfig file using printf to preserve newlines
+          # Write the kubeconfig file preserving newlines
           printf "%s" "${{ secrets.KUBECONFIG_PROD }}" > kubeconfig.yaml
-          # Set the KUBECONFIG environment variable so kubectl can find the file
+          # Set the KUBECONFIG environment variable so kubectl uses this file
           export KUBECONFIG=$(pwd)/kubeconfig.yaml
-          # Debug: List the contexts from the kubeconfig to verify it's loaded correctly
-          kubectl config get-contexts
+          # Debug: Show the beginning and end of the kubeconfig file
+          head -n 10 kubeconfig.yaml
+          tail -n 10 kubeconfig.yaml
+          # Debug: Verify the loaded configuration
+          kubectl config view
 
-      # Update the Kubernetes deployment with the newly built image using the same version tag
+      # (Optional) Test connectivity to the API server
+      - name: Test API connectivity
+        run: |
+          export KUBECONFIG=$(pwd)/kubeconfig.yaml
+          curl -k https://192.168.1.71:6443/version
+
+      # Update the Kubernetes deployment with the newly built image
       - name: Update Kubernetes deployment with new image
         run: |
+          export KUBECONFIG=$(pwd)/kubeconfig.yaml
           kubectl set image deployment/test-home-lab test_home_lab=ghcr.io/${{ github.repository }}:version-${{ github.run_number }} -n default
