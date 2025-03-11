@@ -48,7 +48,7 @@ jobs:
           # Debug: Verify the loaded configuration
           kubectl config view
 
-      # (Optional) Test connectivity to the API server
+      # (Optional) Test connectivity to the API server!!!!!
       - name: Test API connectivity
         run: |
           export KUBECONFIG=$(pwd)/kubeconfig.yaml
