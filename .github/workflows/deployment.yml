@@ -35,7 +35,7 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}:version-${{ github.run_number }}
 
-      # Write the production kubeconfig file from the secret using printf
+      # Write the production kubeconfig file from the secret using printf !!!!!!
       - name: Set up kubectl with prod kubeconfig
         run: |
           # Write the kubeconfig file preserving newlines
@@ -48,7 +48,7 @@ jobs:
           # Debug: Verify the loaded configuration
           kubectl config view
 
-      # (Optional) Test connectivity to the API server!!!!!
+      # (Optional) Test connectivity to the API server
       - name: Test API connectivity
         run: |
           export KUBECONFIG=$(pwd)/kubeconfig.yaml
