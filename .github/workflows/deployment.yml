@@ -38,6 +38,12 @@ jobs:
           export KUBECONFIG=$(pwd)/kubeconfig.yaml
           kubectl config get-contexts
 
+      - name: Show kubeconfig
+        run: |
+          cat kubeconfig.yaml
+          kubectl config view
+          kubectl cluster-info
+
       - name: Update Kubernetes deployment with new image
         run: |
           # Use the same version tag in the update command
