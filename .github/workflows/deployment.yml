@@ -58,4 +58,4 @@ jobs:
       - name: Update Kubernetes deployment with new image
         run: |
           export KUBECONFIG=$(pwd)/kubeconfig.yaml
-          kubectl set image deployment/test-home-lab test_home_lab=ghcr.io/${{ github.repository }}:version-${{ github.run_number }} -n default
+          kubectl set image deployment/test-home-lab test-home-lab=ghcr.io/${{ github.repository }}:version-${{ github.run_number }} -n default
