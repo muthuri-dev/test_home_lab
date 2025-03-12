@@ -5,20 +5,23 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository code
+      # 1. Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Docker Buildx for building images
+      # 2. Set up Docker Buildx for building Docker images
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # Step 3: Log in to GitHub Container Registry using your personal access token (GHCR_PAT)
+      # 3. Log in to GitHub Container Registry using your PAT (GHCR_PAT)
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -26,7 +29,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
 
-      # Step 4: Build and push the Docker image with a version tag
+      # 4. Build and push the Docker image with a version tag and latest tag
       - name: Build and push Docker image
         id: build_image
         uses: docker/build-push-action@v4
@@ -40,22 +43,22 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.description=NestJS application for ${{ github.repository }}
 
-      # Step 5: Echo the image name for verification
+      # 5. Echo the image name for verification
       - name: Echo image name
         run: |
           echo "Image: ghcr.io/${{ github.repository }}:version-${{ github.run_number }}"
 
-      # Step 6: Update the deployment manifest with the new image tag and push the change to GitHub
+      # 6. Update the Kubernetes deployment manifest with the new image tag
       - name: Update deployment manifest with new image tag
         run: |
-          # Configure Git
+          # Configure Git so that the bot can commit changes
           git config --global user.email "actions@github.com"
           git config --global user.name "github-actions"
 
-          # Update the image tag in manifests/deployment.yaml
+          # Update the image tag in manifests/deployment.yaml using sed
           sed -i "s|ghcr.io/${{ github.repository }}:.*|ghcr.io/${{ github.repository }}:version-${{ github.run_number }}|g" manifests/deployment.yaml
 
-          # Commit and push the updated manifest
+          # Commit and push the change back to the repository
           git add manifests/deployment.yaml
           git commit -m "Update image to version-${{ github.run_number }}"
           git push origin main
