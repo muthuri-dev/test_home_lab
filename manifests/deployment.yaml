@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: test-home-lab # Only one container!
-          image: ghcr.io/muthuri-dev/test_home_lab:version-0 # Initial placeholder
+          image: ghcr.io/muthuri-dev/test_home_lab:version-14
           ports:
             - containerPort: 3000
           livenessProbe:
