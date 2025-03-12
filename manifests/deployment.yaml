@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-home-lab
+  namespace: default
+  labels:
+    app: test-home-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-home-lab
+  template:
+    metadata:
+      labels:
+        app: test-home-lab
+    spec:
+      containers:
+        - name: test-home-lab
+          image: ghcr.io/muthuri-dev/test_home_lab:latest # Placeholder tag; will be updated by the workflow
+          ports:
+            - containerPort: 3000

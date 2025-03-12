@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-home-lab
+  namespace: argocd
+spec:
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  source:
+    repoURL: 'https://github.com/muthuri-dev/test_home_lab.git'
+    targetRevision: main
+    path: manifests
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
