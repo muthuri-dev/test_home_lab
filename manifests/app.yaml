@@ -4,6 +4,7 @@ metadata:
   name: test-home-lab
   namespace: argocd
 spec:
+  project: default
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: default
