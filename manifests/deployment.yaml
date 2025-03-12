@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
         - name: test-home-lab
-          image: ghcr.io/muthuri-dev/test_home_lab:version-8
+          image: ghcr.io/muthuri-dev/test_home_lab:version-9
           ports:
             - containerPort: 3000
