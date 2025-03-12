@@ -44,7 +44,7 @@ jobs:
             type=raw,value=version-${{ github.run_number }}
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
 
-      # Build and push the Docker image with metadata
+      # Build and push the Docker image with metadata!!!
       - name: Build and push Docker image
         id: build_image
         uses: docker/build-push-action@v4
