@@ -20,7 +20,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Log in to GitHub Container Registry
+      - name: Log in to GHCR
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -36,7 +36,7 @@ jobs:
             type=raw,value=version-${{ github.run_number }}
             type=raw,value=latest
 
-      - name: Build and push Docker image
+      - name: Build and push
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -44,22 +44,20 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Update deployment manifest
+      - name: Update Kubernetes manifest
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "github-actions"
 
-          # Get the first tag from newline-separated list
-          IFS=$'\n' read -rd '' -a tags <<< "${{ steps.meta.outputs.tags }}"
-          FIRST_TAG="${tags[0]}"
+          # Get first tag safely
+          mapfile -t TAGS <<< "${{ steps.meta.outputs.tags }}"
+          FIRST_TAG="${TAGS[0]}"
+          echo "Using tag: $FIRST_TAG"
 
-          # Debug output
-          echo "Extracted first tag: $FIRST_TAG"
+          # Update deployment.yaml with exact match
+          sed -i "s|image: ghcr.io/muthuri-dev/test_home_lab:.*|image: ${FIRST_TAG}|g" manifests/deployment.yaml
 
-          # Update deployment.yaml with proper escaping
-          sed -i "s|image: ghcr.io/.*|image: ${FIRST_TAG}|g" manifests/deployment.yaml
-
-          # Commit and push
+          # Commit changes
           git add manifests/deployment.yaml
           git commit -m "Update image to ${FIRST_TAG}" || echo "No changes to commit"
           git push origin main
