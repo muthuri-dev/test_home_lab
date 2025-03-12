@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
         - name: test-home-lab
-          image: ghcr.io/muthuri-dev/test_home_lab:latest # Placeholder tag; will be updated by the workflow
+          image: ghcr.io/muthuri-dev/test_home_lab:version-8
           ports:
             - containerPort: 3000
