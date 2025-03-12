@@ -49,18 +49,19 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       # 6. Update the Kubernetes manifest with the new version tag
-      - name: Update deployment manifest
+      - name: Update deployment manifest with new image tag
         run: |
-          # Configure git to push changes
           git config --global user.email "actions@github.com"
           git config --global user.name "github-actions"
 
-          # Use sed to replace the image in the deployment.yaml
-          sed -i "s|ghcr.io/${{ github.repository }}:.*|${{ steps.meta.outputs.tags }}|g" manifests/deployment.yaml
+          # If steps.meta.outputs.tags = "ghcr.io/...:version-3 ghcr.io/...:latest",
+          # extract just the first tag (split by space).
+          FIRST_TAG=$(echo "${{ steps.meta.outputs.tags }}" | awk '{print $1}')
 
-          # Commit and push changes
+          sed -i "s|ghcr.io/muthuri-dev/test_home_lab:.*|$FIRST_TAG|g" manifests/deployment.yaml
+
           git add manifests/deployment.yaml
-          git commit -m "Update image to ${{ steps.meta.outputs.tags }}"
+          git commit -m "Update image to $FIRST_TAG"
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
