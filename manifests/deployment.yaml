@@ -16,13 +16,13 @@ spec:
         app: test-home-lab
     spec:
       containers:
-        - name: test-home-lab # Only ONE container
-          image: ghcr.io/muthuri-dev/test_home_lab:version-XX # Will be auto-updated
+        - name: test-home-lab # Only one container!
+          image: ghcr.io/muthuri-dev/test_home_lab:version-0 # Initial placeholder
           ports:
             - containerPort: 3000
           livenessProbe:
             httpGet:
-              path: / # Use root endpoint instead of /health
+              path: /
               port: 3000
             initialDelaySeconds: 15
             periodSeconds: 20
