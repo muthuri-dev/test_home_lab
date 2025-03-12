@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-home-lab-service
+  namespace: default
+spec:
+  selector:
+    app: test-home-lab # Matches your deployment's labels
+  ports:
+    - protocol: TCP
+      port: 80 # External port
+      targetPort: 3000 # Matches your containerPort
+  type: NodePort # For external access (or LoadBalancer in the cloud)
