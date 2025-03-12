@@ -16,24 +16,22 @@ spec:
         app: test-home-lab
     spec:
       containers:
-        - name: test-home-lab # Only ONE container definition
-          image: ghcr.io/muthuri-dev/test_home_lab:version-9 # Will be auto-updated by workflow
+        - name: test-home-lab # Only ONE container
+          image: ghcr.io/muthuri-dev/test_home_lab:version-XX # Will be auto-updated
           ports:
             - containerPort: 3000
-          # Add liveness/readiness probes (critical!)
           livenessProbe:
             httpGet:
-              path: /health # Replace with your app's health endpoint
+              path: / # Use root endpoint instead of /health
               port: 3000
             initialDelaySeconds: 15
             periodSeconds: 20
           readinessProbe:
             httpGet:
-              path: /health
+              path: /
               port: 3000
             initialDelaySeconds: 5
             periodSeconds: 5
-          # Add resource limits (recommended)
           resources:
             requests:
               memory: '256Mi'

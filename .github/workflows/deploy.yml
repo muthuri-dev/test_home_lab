@@ -50,13 +50,12 @@ jobs:
           # Get the new tag
           NEW_TAG="${{ steps.meta.outputs.tags }}"
 
-          # Update deployment.yaml precisely
+          # Use exact matching to prevent YAML corruption
           sed -i "s|image: ghcr.io/muthuri-dev/test_home_lab:.*|image: ${NEW_TAG}|g" manifests/deployment.yaml
 
-          # Debug: Print the updated YAML
-          cat manifests/deployment.yaml
+          # Validate YAML syntax
+          yamllint manifests/deployment.yaml
 
-          # Commit and push
           git add manifests/deployment.yaml
           git commit -m "Update image to ${NEW_TAG}"
           git push origin main
