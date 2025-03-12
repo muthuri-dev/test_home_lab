@@ -13,23 +13,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out the repository
-      - name: Check out code
+      # 1. Check out the repository code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Set up Docker Buildx
+      # 2. Set up Docker Buildx for building images
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # 3. Log in to GitHub Container Registry using a PAT stored as GHCR_PAT
-      - name: Log in to GHCR
+      # 3. Log in to GitHub Container Registry using your PAT stored as GHCR_PAT
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
 
-      # 4. Generate Docker image metadata (tags + labels)
+      # 4. Generate Docker image metadata (tags and labels)
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -39,8 +39,9 @@ jobs:
             type=raw,value=version-${{ github.run_number }}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      # 5. Build and push Docker image using the generated tags/labels
+      # 5. Build and push the Docker image using the generated tags/labels
       - name: Build and push Docker image
+        id: build_image
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -48,20 +49,29 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      # 6. Update the Kubernetes manifest with the new version tag
+      # 6. Echo the image name for verification
+      - name: Echo image name
+        run: |
+          echo "Image: ${{ steps.meta.outputs.tags }}"
+
+      # 7. Update the Kubernetes deployment manifest with the new image tag and push changes back to GitHub
       - name: Update deployment manifest with new image tag
         run: |
+          # Configure git to push changes
           git config --global user.email "actions@github.com"
           git config --global user.name "github-actions"
 
-          # If steps.meta.outputs.tags = "ghcr.io/...:version-3 ghcr.io/...:latest",
-          # extract just the first tag (split by space).
-          FIRST_TAG=$(echo "${{ steps.meta.outputs.tags }}" | awk '{print $1}')
+          # Convert multi-line tags to a single line and extract the first tag
+          SINGLE_LINE_TAGS=$(echo "${{ steps.meta.outputs.tags }}" | tr '\n' ' ')
+          FIRST_TAG=$(echo "$SINGLE_LINE_TAGS" | awk '{print $1}')
+          echo "Using image tag: $FIRST_TAG"
 
+          # Update the image tag in the deployment manifest (manifests/deployment.yaml)
           sed -i "s|ghcr.io/muthuri-dev/test_home_lab:.*|$FIRST_TAG|g" manifests/deployment.yaml
 
+          # Commit and push the updated manifest
           git add manifests/deployment.yaml
-          git commit -m "Update image to $FIRST_TAG"
+          git commit -m "Update image to $FIRST_TAG" || echo "No changes to commit"
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
